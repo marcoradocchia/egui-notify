@@ -11,8 +11,8 @@ pub use anchor::*;
 pub use egui::__run_test_ctx;
 use egui::text::TextWrapping;
 use egui::{
-    vec2, Area, Align, Color32, Context, CornerRadius, FontId, FontSelection, Id, Order, Rect,
-    Shadow, TextWrapMode, Vec2, WidgetText,
+    vec2, Align, Area, Color32, Context, CornerRadius, FontId, FontSelection, Id, Order, Rect,
+    Shadow, Stroke, StrokeKind, TextWrapMode, Vec2, WidgetText,
 };
 
 pub(crate) const TOAST_WIDTH: f32 = 180.;
@@ -47,6 +47,8 @@ pub struct Toasts {
     speed: f32,
     font: Option<FontId>,
     shadow: Option<Shadow>,
+    fill: Option<Color32>,
+    stroke: Option<Stroke>,
     held: bool,
 }
 
@@ -64,6 +66,8 @@ impl Toasts {
             speed: 4.,
             reverse: false,
             font: None,
+            fill: None,
+            stroke: None,
             shadow: None,
         }
     }
@@ -189,6 +193,18 @@ impl Toasts {
     /// Changes the default font used for all toasts.
     pub fn with_default_font(mut self, font: FontId) -> Self {
         self.font = Some(font);
+        self
+    }
+
+    /// The fill or background color for toasts.
+    pub fn with_fill(mut self, fill: impl Into<Color32>) -> Self {
+        self.fill = Some(fill.into());
+        self
+    }
+
+    /// Enables the use of a stroke for toasts.
+    pub fn with_stroke(mut self, stroke: impl Into<Stroke>) -> Self {
+        self.stroke = Some(stroke.into());
         self
     }
 }
@@ -330,8 +346,18 @@ impl Toasts {
                             .add(shadow.as_shape(rect, rounding));
                     }
 
+                    // Draw stroke
+                    if let Some(stroke) = self.stroke {
+                        p.with_clip_rect(ctx.content_rect()).rect_stroke(
+                            rect,
+                            rounding,
+                            stroke,
+                            StrokeKind::Outside,
+                        );
+                    }
+
                     // Draw background
-                    p.rect_filled(rect, rounding, visuals.bg_fill);
+                    p.rect_filled(rect, rounding, self.fill.unwrap_or(visuals.bg_fill));
 
                     // Paint icon
                     if let Some(icon_galley) = icon_galley.filter(|_| toast.level != ToastLevel::None) {
@@ -398,9 +424,11 @@ impl Toasts {
                                 clip_rect.set_top(clip_rect.bottom() - 2.0);
                                 clip_rect.set_right(rect.max.x - (1. - (current / initial)) * toast.width);
 
-                                ui.painter()
-                                    .with_clip_rect(clip_rect)
-                                    .rect_filled(rect, rounding, visuals.fg_stroke.color);
+                                ui.painter().with_clip_rect(clip_rect).rect_filled(
+                                    rect,
+                                    rounding,
+                                    visuals.fg_stroke.color,
+                                );
                             }
                         }
                     }

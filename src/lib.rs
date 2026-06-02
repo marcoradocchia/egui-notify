@@ -360,7 +360,9 @@ impl Toasts {
                     p.rect_filled(rect, rounding, self.fill.unwrap_or(visuals.bg_fill));
 
                     // Paint icon
-                    if let Some(icon_galley) = icon_galley.filter(|_| toast.level != ToastLevel::None) {
+                    if let Some(icon_galley) =
+                        icon_galley.filter(|_| toast.level != ToastLevel::None)
+                    {
                         let oy = toast.height / 2. - action_height / 2.;
                         let ox = padding.x + icon_x_padding.0;
                         p.galley(
@@ -382,7 +384,8 @@ impl Toasts {
                     } else {
                         cross_width + cross_x_padding.0
                     };
-                    let ox = (toast.width / 2. - caption_width / 2.) + o_from_icon / 2. - o_from_cross / 2.;
+                    let ox = (toast.width / 2. - caption_width / 2.) + o_from_icon / 2.
+                        - o_from_cross / 2.;
                     p.galley(
                         rect.min + vec2(ox, oy),
                         caption_galley,
@@ -422,7 +425,9 @@ impl Toasts {
 
                                 let mut clip_rect = rect;
                                 clip_rect.set_top(clip_rect.bottom() - 2.0);
-                                clip_rect.set_right(rect.max.x - (1. - (current / initial)) * toast.width);
+                                clip_rect.set_right(
+                                    rect.max.x - (1. - (current / initial)) * toast.width,
+                                );
 
                                 ui.painter().with_clip_rect(clip_rect).rect_filled(
                                     rect,
